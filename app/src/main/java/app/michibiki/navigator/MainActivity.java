@@ -39,6 +39,7 @@ public final class MainActivity extends Activity implements SensorEventListener,
     private final AngleFilter compassFilter = new AngleFilter(0.25, 25.0, 220.0);
     private final TargetDirectionEngine targetDirection = new TargetDirectionEngine();
     private float compassHeading;
+    private boolean detourMode;
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -63,6 +64,14 @@ public final class MainActivity extends Activity implements SensorEventListener,
         gap(root, 10);
 
         compass = new CompassView(this);
+        compass.setOnLongClickListener(view -> {
+            detourMode = !detourMode;
+            NavStore.setOption(this, "detour_mode", detourMode);
+            compass.setDetourMode(detourMode);
+            NavWidgetProvider.updateAll(this);
+            Toast.makeText(this, detourMode ? "Detour preview enabled" : "Detour preview disabled", Toast.LENGTH_SHORT).show();
+            return true;
+        });
         root.addView(compass, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(292)));
 
         distanceText = Ui.text(this, "—", 42, true);
@@ -174,6 +183,8 @@ public final class MainActivity extends Activity implements SensorEventListener,
 
     @Override protected void onResume() {
         super.onResume();
+        detourMode = NavStore.option(this, "detour_mode", false);
+        compass.setDetourMode(detourMode);
         if (rotationSensor != null) sensorManager.registerListener(this, rotationSensor, SensorManager.SENSOR_DELAY_GAME);
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                 || checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {

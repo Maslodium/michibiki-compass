@@ -48,6 +48,8 @@ public final class NavigationGlyphToyService extends Service implements SensorEv
                 String event = data.getString(GlyphToy.MSG_GLYPH_TOY_DATA);
                 if (GlyphToy.EVENT_CHANGE.equals(event)) {
                     obstaclePreview = !obstaclePreview;
+                    NavStore.setOption(NavigationGlyphToyService.this, "detour_mode", obstaclePreview);
+                    NavWidgetProvider.updateAll(NavigationGlyphToyService.this);
                     renderFrame();
                 } else if (GlyphToy.EVENT_AOD.equals(event)) {
                     renderFrame();
@@ -59,6 +61,7 @@ public final class NavigationGlyphToyService extends Service implements SensorEv
 
     @Override public void onCreate() {
         super.onCreate();
+        obstaclePreview = NavStore.option(this, "detour_mode", false);
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         rotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         locationProvider = new SystemLocationProvider(this);
@@ -148,27 +151,21 @@ public final class NavigationGlyphToyService extends Service implements SensorEv
             // Until obstacle geometry is supplied by a routing engine, use a
             // boundary perpendicular to the direct route. The renderer keeps
             // target and wall angles separate so real map geometry can replace it.
+            drawTargetArrow(frame, relative);
+            drawPositionRings(frame);
             if (obstaclePreview) drawObstacle(frame, relative, relative);
-            else drawArrow(frame, relative, 255);
-            if (northCompass.hasValue()) drawNorthStar(frame, -northCompass.value());
+            if (northCompass.hasValue()) drawNorthMarker(frame, -northCompass.value());
         }
         try { matrixManager.setMatrixFrame(frame); } catch (Exception ignored) {}
     }
 
-    private void drawArrow(int[] frame, double degrees, int brightness) {
+    private void drawTargetArrow(int[] frame, double degrees) {
         double radians = Math.toRadians(degrees);
-        // Local arrow geometry is balanced around (0,0), so (12,12) is the
-        // actual visual and mathematical pivot at every angle.
-        int[] tip = rotatePoint(0, -9, radians);
-        int[] neckLeft = rotatePoint(-5, -3, radians);
-        int[] neckRight = rotatePoint(5, -3, radians);
-        int[] shaftTop = rotatePoint(0, -2, radians);
-        int[] shaftBottom = rotatePoint(0, 6, radians);
-        drawThickLine(frame, center + tip[0], center + tip[1], center + neckLeft[0], center + neckLeft[1], brightness);
-        drawThickLine(frame, center + tip[0], center + tip[1], center + neckRight[0], center + neckRight[1], brightness);
-        drawThickLine(frame, center + neckLeft[0], center + neckLeft[1], center + neckRight[0], center + neckRight[1], brightness);
-        drawThickLine(frame, center + shaftTop[0], center + shaftTop[1], center + shaftBottom[0], center + shaftBottom[1], brightness);
-        setPixel(frame, center, center, brightness);
+        drawRotatedLine(frame, -4, -3, 0, -9, radians, 255);
+        drawRotatedLine(frame, 0, -9, 4, -3, radians, 255);
+        // Short serifs point inward and make the destination a complete A-like mark.
+        drawRotatedLine(frame, -4, -3, -2, -3, radians, 255);
+        drawRotatedLine(frame, 4, -3, 2, -3, radians, 255);
     }
 
     private int[] rotatePoint(int x, int y, double radians) {
@@ -192,19 +189,18 @@ public final class NavigationGlyphToyService extends Service implements SensorEv
         // Keep the obstacle on the outer edge so it cannot cover the fork.
         // wallNormalDegrees controls its orientation independently.
         drawRotatedLine(frame, -6, -8, 6, -8, wallRadians, 255);
-        drawRotatedLine(frame, -5, -7, 5, -7, wallRadians, 190);
+        drawRotatedLine(frame, -5, -7, 5, -7, wallRadians, 255);
 
-        // Two compact, spatially separated detours. Unlike the old preview,
-        // these are paths with small arrowheads, not three overlapping arrows.
-        drawRotatedLine(frame, -1, 6, -5, 2, targetRadians, 255);
-        drawRotatedLine(frame, -5, 2, -9, -2, targetRadians, 255);
-        drawRotatedLine(frame, -9, -2, -6, -2, targetRadians, 255);
-        drawRotatedLine(frame, -9, -2, -8, 1, targetRadians, 255);
+        // Two half-arrows use the same inward serif language as the target.
+        drawRotatedLine(frame, -6, -3, -9, 0, targetRadians, 255);
+        drawRotatedLine(frame, -9, 0, -6, 3, targetRadians, 255);
+        drawRotatedLine(frame, -6, -3, -4, -3, targetRadians, 255);
+        drawRotatedLine(frame, -6, 3, -4, 3, targetRadians, 255);
 
-        drawRotatedLine(frame, 1, 6, 5, 2, targetRadians, 255);
-        drawRotatedLine(frame, 5, 2, 9, -2, targetRadians, 255);
-        drawRotatedLine(frame, 9, -2, 6, -2, targetRadians, 255);
-        drawRotatedLine(frame, 9, -2, 8, 1, targetRadians, 255);
+        drawRotatedLine(frame, 6, -3, 9, 0, targetRadians, 255);
+        drawRotatedLine(frame, 9, 0, 6, 3, targetRadians, 255);
+        drawRotatedLine(frame, 6, -3, 4, -3, targetRadians, 255);
+        drawRotatedLine(frame, 6, 3, 4, 3, targetRadians, 255);
     }
 
     private void drawRotatedLine(int[] frame, int x0, int y0, int x1, int y1,
@@ -215,17 +211,32 @@ public final class NavigationGlyphToyService extends Service implements SensorEv
                 center + end[0], center + end[1], brightness);
     }
 
-    private void drawNorthStar(int[] frame, double degrees) {
+    private void drawNorthMarker(int[] frame, double degrees) {
         double radians = Math.toRadians(degrees);
-        int radius = Math.max(2, center - 1);
-        int x = center + (int) Math.round(Math.sin(radians) * radius);
-        int y = center - (int) Math.round(Math.cos(radians) * radius);
-        // Four-ray star: a bright core plus one pixel in every cardinal direction.
-        setPixel(frame, x, y, 255);
-        setPixel(frame, x - 1, y, 210);
-        setPixel(frame, x + 1, y, 210);
-        setPixel(frame, x, y - 1, 210);
-        setPixel(frame, x, y + 1, 210);
+        int radius = 10;
+        for (int angle = -28; angle <= 28; angle += 7) {
+            double point = radians + Math.toRadians(angle);
+            int x = symmetricRound(Math.sin(point) * radius * center / 12.0);
+            int y = symmetricRound(-Math.cos(point) * radius * center / 12.0);
+            setPixel(frame, center + x, center + y, 255);
+        }
+        // Pixel N is attached inside the arc and rotates with it.
+        drawRotatedLine(frame, -2, -8, -2, -5, radians, 255);
+        drawRotatedLine(frame, -2, -8, 2, -5, radians, 255);
+        drawRotatedLine(frame, 2, -8, 2, -5, radians, 255);
+    }
+
+    private void drawPositionRings(int[] frame) {
+        drawPixelCircle(frame, 2, 255);
+        drawPixelCircle(frame, 3, 255);
+    }
+
+    private void drawPixelCircle(int[] frame, int logicalRadius, int brightness) {
+        for (int angle = 0; angle < 360; angle += 15) {
+            double radians = Math.toRadians(angle);
+            int[] point = rotatePoint(logicalRadius, 0, radians);
+            setPixel(frame, center + point[0], center + point[1], brightness);
+        }
     }
 
     private void drawThickLine(int[] frame, int x0, int y0, int x1, int y1, int brightness) {

@@ -65,6 +65,7 @@ public final class NavWidgetProvider extends AppWidgetProvider {
 
     private static RemoteViews build(Context context) {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_nav);
+        boolean detourMode = NavStore.option(context, "detour_mode", false);
         Intent main = new Intent(context, MainActivity.class);
         PendingIntent mainPending = PendingIntent.getActivity(context, 10, main, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         views.setOnClickPendingIntent(R.id.widget_root, mainPending);
@@ -81,14 +82,14 @@ public final class NavWidgetProvider extends AppWidgetProvider {
             views.setTextViewText(R.id.widget_name, "No destination");
             views.setTextViewText(R.id.widget_distance, "—");
             views.setTextViewText(R.id.widget_status, "Tap to configure");
-            views.setImageViewBitmap(R.id.widget_arrow, arrowBitmap(0, false));
+            views.setImageViewBitmap(R.id.widget_arrow, compassBitmap(0, false, detourMode));
             return views;
         }
         views.setTextViewText(R.id.widget_name, NavStore.targetName(context));
         if (!NavStore.hasLocation(context)) {
             views.setTextViewText(R.id.widget_distance, "—");
             views.setTextViewText(R.id.widget_status, "Waiting for location");
-            views.setImageViewBitmap(R.id.widget_arrow, arrowBitmap(0, false));
+            views.setImageViewBitmap(R.id.widget_arrow, compassBitmap(0, false, detourMode));
             return views;
         }
         double bearing = GeoMath.bearingDegrees(NavStore.locationLat(context), NavStore.locationLon(context), NavStore.targetLat(context), NavStore.targetLon(context));
@@ -96,32 +97,73 @@ public final class NavWidgetProvider extends AppWidgetProvider {
         long ageSeconds = Math.max(0, (System.currentTimeMillis() - NavStore.locationTime(context)) / 1000L);
         views.setTextViewText(R.id.widget_distance, GeoMath.formatDistance(distance));
         views.setTextViewText(R.id.widget_status, String.format(Locale.getDefault(), "%.0f° · ±%.0f m · %d s", bearing, NavStore.locationAccuracy(context), ageSeconds));
-        views.setImageViewBitmap(R.id.widget_arrow, arrowBitmap((float) bearing, true));
+        views.setImageViewBitmap(R.id.widget_arrow, compassBitmap((float) bearing, true, detourMode));
         return views;
     }
 
-    private static Bitmap arrowBitmap(float degrees, boolean ready) {
+    private static Bitmap compassBitmap(float degrees, boolean ready, boolean detourMode) {
         Bitmap bitmap = Bitmap.createBitmap(180, 180, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(4f);
-        paint.setColor(Color.GRAY);
+        paint.setStrokeCap(Paint.Cap.ROUND);
+        paint.setStrokeJoin(Paint.Join.ROUND);
+        paint.setStrokeWidth(3f);
+        paint.setColor(Color.WHITE);
         canvas.drawCircle(90, 90, 82, paint);
+
+        android.graphics.RectF northArc = new android.graphics.RectF(20, 20, 160, 160);
+        paint.setStrokeWidth(4f);
+        canvas.drawArc(northArc, -116f, 52f, false, paint);
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(Color.WHITE);
-        paint.setTextSize(22f);
+        paint.setTextSize(20f);
+        paint.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
         paint.setTextAlign(Paint.Align.CENTER);
-        canvas.drawText("N", 90, 27, paint);
+        canvas.drawText("N", 90, 45, paint);
+
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(4f);
+        canvas.drawCircle(90, 90, 17, paint);
+        canvas.drawCircle(90, 90, 11, paint);
         if (!ready) return bitmap;
+
         canvas.rotate(degrees, 90, 90);
-        Path path = new Path();
-        path.moveTo(90, 20);
-        path.lineTo(112, 104);
-        path.lineTo(90, 88);
-        path.lineTo(68, 104);
-        path.close();
-        canvas.drawPath(path, paint);
+        Path target = new Path();
+        target.moveTo(68, 61);
+        target.lineTo(90, 25);
+        target.lineTo(112, 61);
+        target.moveTo(68, 61);
+        target.lineTo(76, 58);
+        target.moveTo(112, 61);
+        target.lineTo(104, 58);
+        paint.setColor(Color.rgb(255, 35, 48));
+        paint.setStrokeWidth(7f);
+        canvas.drawPath(target, paint);
+
+        if (detourMode) {
+            paint.setColor(Color.WHITE);
+            paint.setStrokeWidth(6f);
+            Path left = new Path();
+            left.moveTo(51, 73);
+            left.lineTo(37, 90);
+            left.lineTo(51, 107);
+            left.moveTo(51, 73);
+            left.lineTo(58, 73);
+            left.moveTo(51, 107);
+            left.lineTo(58, 107);
+            canvas.drawPath(left, paint);
+
+            Path right = new Path();
+            right.moveTo(129, 73);
+            right.lineTo(143, 90);
+            right.lineTo(129, 107);
+            right.moveTo(129, 73);
+            right.lineTo(122, 73);
+            right.moveTo(129, 107);
+            right.lineTo(122, 107);
+            canvas.drawPath(right, paint);
+        }
         return bitmap;
     }
 }
