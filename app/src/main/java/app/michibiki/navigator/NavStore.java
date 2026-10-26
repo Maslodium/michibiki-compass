@@ -21,6 +21,7 @@ public final class NavStore {
                 .putString("target_name", name == null || name.isBlank() ? "Selected point" : name)
                 .apply();
         NavWidgetProvider.updateAll(context);
+        NavWidgetProvider.startLiveUpdates(context);
     }
 
     public static boolean hasTarget(Context context) { return prefs(context).getBoolean("has_target", false); }

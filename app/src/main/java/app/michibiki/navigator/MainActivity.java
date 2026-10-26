@@ -12,6 +12,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Build;
 import android.provider.Settings;
 import android.view.Gravity;
 import android.view.View;
@@ -147,6 +148,9 @@ public final class MainActivity extends Activity implements SensorEventListener,
     private void ensureLocationPermission() {
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION);
+        } else if (Build.VERSION.SDK_INT >= 33
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, LOCATION_PERMISSION + 1);
         }
     }
 
@@ -154,8 +158,18 @@ public final class MainActivity extends Activity implements SensorEventListener,
 
     @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
         super.onRequestPermissionsResult(requestCode, permissions, results);
-        if (requestCode == LOCATION_PERMISSION && results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED) startLocation();
-        else statusText.setText("Location permission denied — manual destination still works");
+        if (requestCode == LOCATION_PERMISSION) {
+            if (results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED) {
+                startLocation();
+                NavWidgetProvider.startLiveUpdates(this);
+                if (Build.VERSION.SDK_INT >= 33
+                        && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                    requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, LOCATION_PERMISSION + 1);
+                }
+            } else {
+                statusText.setText("Location permission denied — manual destination still works");
+            }
+        }
     }
 
     @Override protected void onResume() {
@@ -167,6 +181,7 @@ public final class MainActivity extends Activity implements SensorEventListener,
             startLocation();
         }
         refresh();
+        NavWidgetProvider.startLiveUpdates(this);
     }
 
     @Override protected void onPause() {

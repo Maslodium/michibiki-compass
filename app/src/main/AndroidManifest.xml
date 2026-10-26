@@ -4,6 +4,9 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="com.nothing.ketchum.permission.ENABLE" />
 
     <queries>
@@ -39,6 +42,11 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/nav_widget_info" />
         </receiver>
+
+        <service
+            android:name=".LiveNavigationService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
 
         <service
             android:name=".NavigationGlyphToyService"

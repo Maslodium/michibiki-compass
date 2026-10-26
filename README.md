@@ -18,7 +18,7 @@ Michibiki is a privacy-first waypoint compass for Nothing phones. Choose a desti
 - independent north marker and destination direction;
 - GNSS course while moving, filtered compass while stationary;
 - rejection of sudden sensor spikes;
-- home-screen and lock-screen 4×2 widget;
+- live home-screen and lock-screen 4×2 widget with manual refresh and an optional foreground location service;
 - bright four-ray north star on the Glyph Matrix;
 - long-press obstacle/detour preview;
 - native rendering for both supported Glyph Matrix sizes.
@@ -49,7 +49,7 @@ Michibiki — приватный компас-навигация для теле
 - независимые указатели севера и направления к цели;
 - курс GNSS при движении и отфильтрованный компас на месте;
 - отсечение резких скачков датчика;
-- виджет 4×2 для рабочего стола и экрана блокировки;
+- живой виджет 4×2 для рабочего стола и экрана блокировки: ручное обновление и отключаемый foreground-сервис геолокации;
 - яркая четырёхлучевая звезда севера на Glyph Matrix;
 - предварительный режим препятствия и обхода по долгому нажатию;
 - нативный рендер для обеих поддерживаемых Glyph Matrix.

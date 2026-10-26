@@ -33,6 +33,7 @@ public final class SettingsActivity extends Activity {
         addSwitch(content, "Online address geocoding", "online_geocoding", true);
         addSwitch(content, "Bias search to the current city\nThe system geocoder may process a reverse-geocoding request", "city_bias", true);
         addSwitch(content, "Online OpenStreetMap tiles", "online_maps", true);
+        addSwitch(content, "Live widget location updates\nUses a foreground service with a persistent notification", "live_widget", true);
 
         TextView note = Ui.text(this, "", 13, false);
         note.setText("The prototype contains no analytics, advertising SDK, account system or custom tracking server. Exact coordinates are stored locally in app preferences.");
@@ -67,7 +68,13 @@ public final class SettingsActivity extends Activity {
                 new int[][]{new int[]{android.R.attr.state_checked}, new int[]{}},
                 new int[]{Color.rgb(105, 105, 105), Color.rgb(48, 48, 48)}));
         toggle.setChecked(NavStore.option(this, key, fallback));
-        toggle.setOnCheckedChangeListener((button, checked) -> NavStore.setOption(this, key, checked));
+        toggle.setOnCheckedChangeListener((button, checked) -> {
+            NavStore.setOption(this, key, checked);
+            if ("live_widget".equals(key)) {
+                if (checked) NavWidgetProvider.startLiveUpdates(this);
+                else stopService(new android.content.Intent(this, LiveNavigationService.class));
+            }
+        });
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         params.bottomMargin = dp(8);
         parent.addView(toggle, params);

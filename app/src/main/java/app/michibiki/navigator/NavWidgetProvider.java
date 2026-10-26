@@ -3,9 +3,11 @@ package app.michibiki.navigator;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.Manifest;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -15,8 +17,24 @@ import android.widget.RemoteViews;
 import java.util.Locale;
 
 public final class NavWidgetProvider extends AppWidgetProvider {
+    private static final String ACTION_REFRESH = "app.michibiki.navigator.WIDGET_REFRESH";
+
     @Override public void onUpdate(Context context, AppWidgetManager manager, int[] appWidgetIds) {
         for (int id : appWidgetIds) manager.updateAppWidget(id, build(context));
+        startLiveUpdates(context);
+    }
+
+    @Override public void onReceive(Context context, Intent intent) {
+        super.onReceive(context, intent);
+        if (ACTION_REFRESH.equals(intent.getAction())) {
+            updateAll(context);
+            startLiveUpdates(context);
+        }
+    }
+
+    @Override public void onDisabled(Context context) {
+        context.stopService(new Intent(context, LiveNavigationService.class));
+        super.onDisabled(context);
     }
 
     static void updateAll(Context context) {
@@ -24,6 +42,25 @@ public final class NavWidgetProvider extends AppWidgetProvider {
         ComponentName component = new ComponentName(context, NavWidgetProvider.class);
         int[] ids = manager.getAppWidgetIds(component);
         for (int id : ids) manager.updateAppWidget(id, build(context));
+    }
+
+    static boolean hasWidgets(Context context) {
+        AppWidgetManager manager = AppWidgetManager.getInstance(context);
+        ComponentName component = new ComponentName(context, NavWidgetProvider.class);
+        return manager.getAppWidgetIds(component).length > 0;
+    }
+
+    static void startLiveUpdates(Context context) {
+        if (!hasWidgets(context) || !NavStore.hasTarget(context)
+                || !NavStore.option(context, "live_widget", true)) return;
+        if (context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) return;
+        try {
+            context.startForegroundService(new Intent(context, LiveNavigationService.class));
+        } catch (RuntimeException ignored) {
+            // Android may reject a background start. A user tap or reopening the
+            // app retries from an allowed context.
+        }
     }
 
     private static RemoteViews build(Context context) {
@@ -35,6 +72,10 @@ public final class NavWidgetProvider extends AppWidgetProvider {
         Intent voice = new Intent(context, VoiceSearchActivity.class);
         PendingIntent voicePending = PendingIntent.getActivity(context, 11, voice, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         views.setOnClickPendingIntent(R.id.widget_voice, voicePending);
+
+        Intent refresh = new Intent(context, NavWidgetProvider.class).setAction(ACTION_REFRESH);
+        PendingIntent refreshPending = PendingIntent.getBroadcast(context, 12, refresh, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        views.setOnClickPendingIntent(R.id.widget_refresh, refreshPending);
 
         if (!NavStore.hasTarget(context)) {
             views.setTextViewText(R.id.widget_name, "No destination");
