@@ -1,56 +1,92 @@
 # Michibiki Compass
 
-An early, privacy-first waypoint compass for Nothing phones. Choose a point, then glance at the app, the 4×2 widget, or the Glyph Matrix instead of keeping a full map open.
+[![Download APK](https://img.shields.io/badge/Download-APK-ffffff?style=for-the-badge&logo=android&logoColor=000000)](https://github.com/Maslodium/michibiki-compass/releases/latest/download/Michibiki.apk)
 
-> **Prototype:** this build is meant for hands-on testing. It is not yet a turn-by-turn navigator and must not be relied on for safety-critical navigation.
+**[Download the latest APK](https://github.com/Maslodium/michibiki-compass/releases/latest/download/Michibiki.apk)** · [English](#english) · [Русский](#русский)
 
-## What works
+> Early prototype. Michibiki is not yet a turn-by-turn navigator and must not be relied on for safety-critical navigation.
 
-- search for a destination by voice or text, with ambiguous results shown for confirmation;
-- choose a point directly on the built-in map;
-- keep location processing on the phone, with separate controls for GPS and network location;
-- show north independently from the destination direction;
-- prefer GNSS course while moving and a filtered compass while stationary;
-- reject sudden compass spikes and smooth ordinary sensor noise;
-- show destination direction and distance in the app and 4×2 widget;
-- run as a Glyph Toy, with a bright four-pixel north star;
-- long-press the Glyph Toy to preview obstacle/detour mode;
-- render natively on both supported Glyph Matrix sizes.
+## English
 
-## Glyph compatibility
+Michibiki is a privacy-first waypoint compass for Nothing phones. Choose a destination and see its direction and straight-line distance in the app, a 4×2 widget, or on the Glyph Matrix—without keeping a full map open.
+
+### Features
+
+- voice or text destination search with a choice between ambiguous results;
+- point selection on the built-in map;
+- separate controls for GPS and network location;
+- independent north marker and destination direction;
+- GNSS course while moving, filtered compass while stationary;
+- rejection of sudden sensor spikes;
+- home-screen and lock-screen 4×2 widget;
+- bright four-ray north star on the Glyph Matrix;
+- long-press obstacle/detour preview;
+- native rendering for both supported Glyph Matrix sizes.
+
+### Glyph compatibility
 
 | Device | Matrix | Support |
 |---|---:|---|
 | Nothing Phone (3) | 25×25 | Interactive Glyph Toy, including long press |
-| Nothing Phone (4a) Pro | 13×13 | AOD-compatible display; artwork is simplified to remain readable |
-| Phone (1), Phone (2), Phone (2a), Phone (3a) series | LED strips | Not yet supported; these require the separate classic Glyph SDK |
+| Nothing Phone (4a) Pro | 13×13 | AOD-compatible display with simplified artwork |
+| Phone (1), Phone (2), Phone (2a), Phone (3a) series | LED strips | Not yet supported; these require the classic Glyph SDK |
 
-The current obstacle preview draws the boundary near the outer edge and rotates it independently from the route arrow. Until map/routing geometry is added, its wall direction is estimated as perpendicular to the direct bearing to the destination.
+Obstacle mode draws the boundary near the outer edge and rotates it independently from the destination arrow. Until map/routing geometry is implemented, the wall is estimated as perpendicular to the direct bearing to the destination.
 
-## Build
+### Privacy
 
-Requirements: JDK 17 and Android SDK 35.
+Navigation state is stored locally. Michibiki contains no analytics, advertising, or tracking backend. Android's geocoder, speech recognizer, map tiles, and network-location provider may contact their respective service providers when enabled.
 
-1. Download the official `glyph-matrix-sdk-2.0.aar` from Nothing's [Glyph Matrix Developer Kit](https://github.com/Nothing-Developer-Programme/GlyphMatrix-Developer-Kit).
-2. Place it at `app/libs/glyph-matrix-sdk-2.0.aar`.
-3. Create `local.properties` with your Android SDK path.
-4. Run `./gradlew assembleDebug` (or `gradlew.bat assembleDebug` on Windows).
+## Русский
 
-The SDK AAR is intentionally excluded from this repository because it is governed by Nothing's separate proprietary licence and cannot be redistributed here. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Michibiki — приватный компас-навигация для телефонов Nothing. Выберите точку назначения и смотрите направление и расстояние по прямой в приложении, виджете 4×2 или на Glyph Matrix, не открывая каждый раз полноценную карту.
 
-## Screenshots
+### Возможности
 
-| Compass | Point picker | Settings |
+- поиск адреса голосом или текстом с выбором из неоднозначных результатов;
+- выбор точки на встроенной карте;
+- отдельные переключатели GPS и сетевого местоположения;
+- независимые указатели севера и направления к цели;
+- курс GNSS при движении и отфильтрованный компас на месте;
+- отсечение резких скачков датчика;
+- виджет 4×2 для рабочего стола и экрана блокировки;
+- яркая четырёхлучевая звезда севера на Glyph Matrix;
+- предварительный режим препятствия и обхода по долгому нажатию;
+- нативный рендер для обеих поддерживаемых Glyph Matrix.
+
+### Совместимость Glyph
+
+| Устройство | Матрица | Поддержка |
+|---|---:|---|
+| Nothing Phone (3) | 25×25 | Интерактивный Glyph Toy, включая долгое нажатие |
+| Nothing Phone (4a) Pro | 13×13 | Режим AOD с упрощённой и читаемой графикой |
+| Phone (1), Phone (2), Phone (2a), Phone (3a) | Светодиодные полосы | Пока не поддерживаются: для них нужен отдельный классический Glyph SDK |
+
+В режиме препятствия граница рисуется у внешнего края и поворачивается независимо от стрелки к цели. Пока геометрия препятствий из карт или роутинга не подключена, стена считается перпендикулярной прямому направлению к точке.
+
+### Приватность
+
+Состояние навигации хранится локально. В Michibiki нет аналитики, рекламы и собственного трекингового сервера. При включении соответствующих функций системный геокодер Android, распознавание речи, сервер карт и провайдер сетевого местоположения могут обращаться к своим поставщикам.
+
+## Screenshots / Скриншоты
+
+| Compass / Компас | Point picker / Выбор точки | Settings / Настройки |
 |---|---|---|
 | ![Compass](docs/screenshots/compass.png) | ![Point picker](docs/screenshots/map.png) | ![Settings](docs/screenshots/settings.png) |
 
 ![Glyph obstacle preview](docs/screenshots/glyph-obstacle-preview.png)
 
-## Privacy
+## Build / Сборка
 
-Location is used for navigation and saved locally in Android preferences. Michibiki does not include analytics, advertising, or its own tracking backend. Android's geocoder, speech recognizer, map tiles, and network-location provider may contact their respective service providers when enabled.
+JDK 17 and Android SDK 35 are required. / Нужны JDK 17 и Android SDK 35.
 
-## Licence
+1. Download `glyph-matrix-sdk-2.0.aar` from Nothing's official [Glyph Matrix Developer Kit](https://github.com/Nothing-Developer-Programme/GlyphMatrix-Developer-Kit).
+2. Put it at `app/libs/glyph-matrix-sdk-2.0.aar`.
+3. Create `local.properties` with your Android SDK path.
+4. Run `./gradlew assembleDebug` or `gradlew.bat assembleDebug` on Windows.
 
-No open-source licence has been granted for Michibiki yet. The Nothing Glyph Matrix SDK is separately licensed by Nothing Technology Limited and is not part of this repository.
+The proprietary SDK AAR is excluded from this repository under Nothing's separate licence. / Проприетарный AAR SDK не включён в репозиторий из-за отдельной лицензии Nothing. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
+## Licence / Лицензия
+
+No open-source licence has been granted for Michibiki yet. / Открытая лицензия для Michibiki пока не выбрана.
