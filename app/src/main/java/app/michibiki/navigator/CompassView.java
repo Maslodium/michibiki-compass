@@ -82,25 +82,23 @@ public final class CompassView extends View {
         paint.setTextAlign(Paint.Align.CENTER);
         paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
         paint.setTextSize(dp(18));
-        canvas.drawText("N", cx, cy - radius + dp(48), paint);
+        canvas.drawText("N", cx, cy - radius + dp(36), paint);
         canvas.restore();
     }
 
     private void drawTargetArrow(Canvas canvas, float cx, float cy, float radius) {
-        float tipY = cy - radius * 0.63f;
+        float tipY = cy - radius * 0.55f;
         float footY = cy - radius * 0.27f;
         float halfWidth = radius * 0.13f;
-        float serif = radius * 0.055f;
+        float serif = radius * 0.09f;
         Path target = new Path();
-        target.moveTo(cx - halfWidth, footY);
+        target.moveTo(cx - halfWidth + serif, footY - serif * 0.45f);
+        target.lineTo(cx - halfWidth, footY);
         target.lineTo(cx, tipY);
         target.lineTo(cx + halfWidth, footY);
-        target.moveTo(cx - halfWidth, footY);
-        target.lineTo(cx - halfWidth + serif, footY - serif * 0.35f);
-        target.moveTo(cx + halfWidth, footY);
-        target.lineTo(cx + halfWidth - serif, footY - serif * 0.35f);
+        target.lineTo(cx + halfWidth - serif, footY - serif * 0.45f);
         paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(dp(6));
+        paint.setStrokeWidth(dp(5));
         paint.setColor(TARGET_RED);
         canvas.drawPath(target, paint);
     }
@@ -110,28 +108,24 @@ public final class CompassView extends View {
         // Compact copies of the main A-shaped arrow, rotated toward each bypass.
         float halfHeight = radius * 0.09f;
         float depth = radius * 0.13f;
-        float serif = radius * 0.045f;
+        float serif = radius * 0.09f;
         paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(dp(5));
+        paint.setStrokeWidth(dp(4));
         paint.setColor(Color.WHITE);
 
         Path left = new Path();
-        left.moveTo(cx - offset + depth, cy - halfHeight);
+        left.moveTo(cx - offset + depth - serif * 0.35f, cy - halfHeight + serif);
+        left.lineTo(cx - offset + depth, cy - halfHeight);
         left.lineTo(cx - offset, cy);
         left.lineTo(cx - offset + depth, cy + halfHeight);
-        left.moveTo(cx - offset + depth, cy - halfHeight);
-        left.lineTo(cx - offset + depth - serif * 0.35f, cy - halfHeight + serif);
-        left.moveTo(cx - offset + depth, cy + halfHeight);
         left.lineTo(cx - offset + depth - serif * 0.35f, cy + halfHeight - serif);
         canvas.drawPath(left, paint);
 
         Path right = new Path();
-        right.moveTo(cx + offset - depth, cy - halfHeight);
+        right.moveTo(cx + offset - depth + serif * 0.35f, cy - halfHeight + serif);
+        right.lineTo(cx + offset - depth, cy - halfHeight);
         right.lineTo(cx + offset, cy);
         right.lineTo(cx + offset - depth, cy + halfHeight);
-        right.moveTo(cx + offset - depth, cy - halfHeight);
-        right.lineTo(cx + offset - depth + serif * 0.35f, cy - halfHeight + serif);
-        right.moveTo(cx + offset - depth, cy + halfHeight);
         right.lineTo(cx + offset - depth + serif * 0.35f, cy + halfHeight - serif);
         canvas.drawPath(right, paint);
     }

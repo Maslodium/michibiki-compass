@@ -10,8 +10,8 @@ android {
         applicationId 'app.michibiki.navigator'
         minSdk 33
         targetSdk 35
-        versionCode 8
-        versionName '0.2.3-sharp-arrows'
+        versionCode 9
+        versionName '0.2.4-responsive-direction'
     }
 
     buildTypes {

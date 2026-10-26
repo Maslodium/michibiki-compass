@@ -164,8 +164,8 @@ public final class NavigationGlyphToyService extends Service implements SensorEv
         drawRotatedLine(frame, -3, -3, 0, -10, radians, 255);
         drawRotatedLine(frame, 0, -10, 3, -3, radians, 255);
         // Short serifs point inward and make the destination a complete A-like mark.
-        drawRotatedLine(frame, -3, -3, -1, -3, radians, 255);
-        drawRotatedLine(frame, 3, -3, 1, -3, radians, 255);
+        drawRotatedLine(frame, -3, -3, -1, -4, radians, 255);
+        drawRotatedLine(frame, 3, -3, 1, -4, radians, 255);
     }
 
     private int[] rotatePoint(int x, int y, double radians) {

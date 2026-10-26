@@ -46,6 +46,16 @@ public final class NavStore {
     public static float locationAccuracy(Context context) { return prefs(context).getFloat("location_accuracy", -1f); }
     public static long locationTime(Context context) { return prefs(context).getLong("location_time", 0L); }
 
+    public static void setHeading(Context context, float heading) {
+        prefs(context).edit()
+                .putBoolean("has_heading", true)
+                .putFloat("heading", heading)
+                .apply();
+    }
+
+    public static boolean hasHeading(Context context) { return prefs(context).getBoolean("has_heading", false); }
+    public static float heading(Context context) { return prefs(context).getFloat("heading", 0f); }
+
     public static boolean option(Context context, String key, boolean fallback) {
         return prefs(context).getBoolean(key, fallback);
     }

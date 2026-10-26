@@ -10,8 +10,8 @@ import android.os.SystemClock;
 final class TargetDirectionEngine {
     enum Source { UNAVAILABLE, STABILIZED_COMPASS, GPS_COURSE }
 
-    private final AngleFilter magnetic = new AngleFilter(0.75, 18.0, 120.0);
-    private final AngleFilter course = new AngleFilter(1.20, 35.0, 100.0);
+    private final AngleFilter magnetic = new AngleFilter(0.16, 32.0, 360.0);
+    private final AngleFilter course = new AngleFilter(0.55, 35.0, 180.0);
     private long gpsCourseValidUntil;
 
     void onMagneticHeading(double degrees, long timestampNanos) {

@@ -36,7 +36,7 @@ public final class MainActivity extends Activity implements SensorEventListener,
     private SensorManager sensorManager;
     private Sensor rotationSensor;
     private SystemLocationProvider locationProvider;
-    private final AngleFilter compassFilter = new AngleFilter(0.25, 25.0, 220.0);
+    private final AngleFilter compassFilter = new AngleFilter(0.12, 32.0, 360.0);
     private final TargetDirectionEngine targetDirection = new TargetDirectionEngine();
     private float compassHeading;
     private boolean detourMode;
@@ -185,7 +185,7 @@ public final class MainActivity extends Activity implements SensorEventListener,
         super.onResume();
         detourMode = NavStore.option(this, "detour_mode", false);
         compass.setDetourMode(detourMode);
-        if (rotationSensor != null) sensorManager.registerListener(this, rotationSensor, SensorManager.SENSOR_DELAY_GAME);
+        if (rotationSensor != null) sensorManager.registerListener(this, rotationSensor, SensorManager.SENSOR_DELAY_FASTEST);
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                 || checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locationProvider.stop();
