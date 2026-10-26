@@ -10,8 +10,8 @@ android {
         applicationId 'app.michibiki.navigator'
         minSdk 33
         targetSdk 35
-        versionCode 10
-        versionName '0.2.5-round-icon'
+        versionCode 11
+        versionName '0.2.6-glyph-brightness'
     }
 
     buildTypes {

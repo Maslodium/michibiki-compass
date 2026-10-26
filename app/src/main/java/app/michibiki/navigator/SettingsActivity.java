@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -34,6 +35,7 @@ public final class SettingsActivity extends Activity {
         addSwitch(content, "Bias search to the current city\nThe system geocoder may process a reverse-geocoding request", "city_bias", true);
         addSwitch(content, "Online OpenStreetMap tiles", "online_maps", true);
         addSwitch(content, "Live widget location updates\nUses a foreground service with a persistent notification", "live_widget", true);
+        addGlyphBrightness(content);
 
         TextView note = Ui.text(this, "", 13, false);
         note.setText("The prototype contains no analytics, advertising SDK, account system or custom tracking server. Exact coordinates are stored locally in app preferences.");
@@ -78,6 +80,46 @@ public final class SettingsActivity extends Activity {
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         params.bottomMargin = dp(8);
         parent.addView(toggle, params);
+    }
+
+    private void addGlyphBrightness(LinearLayout parent) {
+        LinearLayout card = new LinearLayout(this);
+        card.setOrientation(LinearLayout.VERTICAL);
+        card.setPadding(dp(16), dp(14), dp(16), dp(14));
+        GradientDrawable background = new GradientDrawable();
+        background.setColor(Ui.PANEL);
+        background.setCornerRadius(dp(16));
+        background.setStroke(dp(1), Color.rgb(55, 55, 55));
+        card.setBackground(background);
+
+        TextView label = Ui.text(this, "GLYPH MATRIX BRIGHTNESS", 15, true);
+        TextView value = Ui.text(this, "", 13, false);
+        value.setTextColor(Ui.MUTED);
+        card.addView(label);
+        card.addView(value);
+
+        SeekBar slider = new SeekBar(this);
+        slider.setMax(90);
+        int savedPercent = Math.max(10, Math.min(100,
+                NavStore.intOption(this, "glyph_brightness_percent", 100)));
+        slider.setProgress(savedPercent - 10);
+        value.setText(savedPercent + "% · applies to every Glyph element");
+        slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                int percent = progress + 10;
+                value.setText(percent + "% · applies to every Glyph element");
+                NavStore.setIntOption(SettingsActivity.this, "glyph_brightness_percent", percent);
+            }
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+        card.addView(slider, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.bottomMargin = dp(8);
+        parent.addView(card, params);
     }
 
     private int dp(int value) { return Math.round(value * getResources().getDisplayMetrics().density); }

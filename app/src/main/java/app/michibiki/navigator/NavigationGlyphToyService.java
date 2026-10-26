@@ -33,6 +33,7 @@ public final class NavigationGlyphToyService extends Service implements SensorEv
     private boolean connected;
     private int matrixSize = 25;
     private int center = 12;
+    private int frameBrightness = 2047;
 
     private final Runnable renderLoop = new Runnable() {
         @Override public void run() {
@@ -142,9 +143,12 @@ public final class NavigationGlyphToyService extends Service implements SensorEv
 
     private void renderFrame() {
         if (!connected || matrixManager == null) return;
+        int percent = Math.max(10, Math.min(100,
+                NavStore.intOption(this, "glyph_brightness_percent", 100)));
+        frameBrightness = Math.max(1, Math.round(2047f * percent / 100f));
         int[] frame = new int[matrixSize * matrixSize];
         if (!NavStore.hasTarget(this) || !NavStore.hasLocation(this) || !targetDirection.hasReference()) {
-            drawX(frame, 255);
+            drawX(frame, frameBrightness);
         } else {
             double bearing = GeoMath.bearingDegrees(NavStore.locationLat(this), NavStore.locationLon(this), NavStore.targetLat(this), NavStore.targetLon(this));
             double relative = targetDirection.relativeBearing(bearing);
@@ -161,11 +165,11 @@ public final class NavigationGlyphToyService extends Service implements SensorEv
 
     private void drawTargetArrow(int[] frame, double degrees) {
         double radians = Math.toRadians(degrees);
-        drawRotatedLine(frame, -3, -3, 0, -10, radians, 255);
-        drawRotatedLine(frame, 0, -10, 3, -3, radians, 255);
+        drawRotatedLine(frame, -3, -3, 0, -10, radians, frameBrightness);
+        drawRotatedLine(frame, 0, -10, 3, -3, radians, frameBrightness);
         // Short serifs point inward and make the destination a complete A-like mark.
-        drawRotatedLine(frame, -3, -3, -1, -4, radians, 255);
-        drawRotatedLine(frame, 3, -3, 1, -4, radians, 255);
+        drawRotatedLine(frame, -3, -3, -1, -4, radians, frameBrightness);
+        drawRotatedLine(frame, 3, -3, 1, -4, radians, frameBrightness);
     }
 
     private int[] rotatePoint(int x, int y, double radians) {
@@ -188,19 +192,19 @@ public final class NavigationGlyphToyService extends Service implements SensorEv
 
         // Keep the obstacle on the outer edge so it cannot cover the fork.
         // wallNormalDegrees controls its orientation independently.
-        drawRotatedLine(frame, -6, -8, 6, -8, wallRadians, 255);
-        drawRotatedLine(frame, -5, -7, 5, -7, wallRadians, 255);
+        drawRotatedLine(frame, -6, -8, 6, -8, wallRadians, frameBrightness);
+        drawRotatedLine(frame, -5, -7, 5, -7, wallRadians, frameBrightness);
 
         // Two half-arrows use the same inward serif language as the target.
-        drawRotatedLine(frame, -6, -3, -10, 0, targetRadians, 255);
-        drawRotatedLine(frame, -10, 0, -6, 3, targetRadians, 255);
-        drawRotatedLine(frame, -6, -3, -7, -1, targetRadians, 255);
-        drawRotatedLine(frame, -6, 3, -7, 1, targetRadians, 255);
+        drawRotatedLine(frame, -6, -3, -10, 0, targetRadians, frameBrightness);
+        drawRotatedLine(frame, -10, 0, -6, 3, targetRadians, frameBrightness);
+        drawRotatedLine(frame, -6, -3, -7, -1, targetRadians, frameBrightness);
+        drawRotatedLine(frame, -6, 3, -7, 1, targetRadians, frameBrightness);
 
-        drawRotatedLine(frame, 6, -3, 10, 0, targetRadians, 255);
-        drawRotatedLine(frame, 10, 0, 6, 3, targetRadians, 255);
-        drawRotatedLine(frame, 6, -3, 7, -1, targetRadians, 255);
-        drawRotatedLine(frame, 6, 3, 7, 1, targetRadians, 255);
+        drawRotatedLine(frame, 6, -3, 10, 0, targetRadians, frameBrightness);
+        drawRotatedLine(frame, 10, 0, 6, 3, targetRadians, frameBrightness);
+        drawRotatedLine(frame, 6, -3, 7, -1, targetRadians, frameBrightness);
+        drawRotatedLine(frame, 6, 3, 7, 1, targetRadians, frameBrightness);
     }
 
     private void drawRotatedLine(int[] frame, int x0, int y0, int x1, int y1,
@@ -218,18 +222,18 @@ public final class NavigationGlyphToyService extends Service implements SensorEv
             double point = radians + Math.toRadians(angle);
             int x = symmetricRound(Math.sin(point) * radius * center / 12.0);
             int y = symmetricRound(-Math.cos(point) * radius * center / 12.0);
-            setPixel(frame, center + x, center + y, 255);
+            setPixel(frame, center + x, center + y, frameBrightness);
         }
         // Pixel N is attached inside the arc and rotates with it.
-        drawRotatedLine(frame, -2, -8, -2, -5, radians, 255);
-        drawRotatedLine(frame, -2, -8, 2, -5, radians, 255);
-        drawRotatedLine(frame, 2, -8, 2, -5, radians, 255);
+        drawRotatedLine(frame, -2, -8, -2, -5, radians, frameBrightness);
+        drawRotatedLine(frame, -2, -8, 2, -5, radians, frameBrightness);
+        drawRotatedLine(frame, 2, -8, 2, -5, radians, frameBrightness);
     }
 
     private void drawPositionRings(int[] frame) {
         // A single reference pixel stays legible without competing with arrows
         // on either the 25x25 or compact 13x13 matrix.
-        setPixel(frame, center, center, 255);
+        setPixel(frame, center, center, frameBrightness);
     }
 
     private void drawThickLine(int[] frame, int x0, int y0, int x1, int y1, int brightness) {

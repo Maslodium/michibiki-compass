@@ -63,4 +63,12 @@ public final class NavStore {
     public static void setOption(Context context, String key, boolean value) {
         prefs(context).edit().putBoolean(key, value).apply();
     }
+
+    public static int intOption(Context context, String key, int fallback) {
+        return prefs(context).getInt(key, fallback);
+    }
+
+    public static void setIntOption(Context context, String key, int value) {
+        prefs(context).edit().putInt(key, value).apply();
+    }
 }
