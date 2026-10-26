@@ -66,6 +66,7 @@ public final class LiveNavigationService extends Service implements LocationProv
         if (now - lastWidgetUpdateMs < 2000L) return;
         lastWidgetUpdateMs = now;
         NavStore.setLocation(this, location);
+        ObstacleRouteDetector.maybeRefresh(this);
     }
 
     @Override public void onProviderError(String message) {

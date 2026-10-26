@@ -71,4 +71,20 @@ public final class NavStore {
     public static void setIntOption(Context context, String key, int value) {
         prefs(context).edit().putInt(key, value).apply();
     }
+
+    public static void setObstacleResult(Context context, boolean detected, int direction) {
+        prefs(context).edit()
+                .putBoolean("obstacle_active", detected)
+                .putInt("obstacle_direction", direction < 0 ? -1 : direction > 0 ? 1 : 0)
+                .putLong("obstacle_checked_at", System.currentTimeMillis())
+                .apply();
+    }
+    public static boolean obstacleDetected(Context context) {
+        long checkedAt = prefs(context).getLong("obstacle_checked_at", 0L);
+        return System.currentTimeMillis() - checkedAt <= 120_000L
+                && prefs(context).getBoolean("obstacle_active", false);
+    }
+    public static int obstacleDirection(Context context) {
+        return obstacleDetected(context) ? prefs(context).getInt("obstacle_direction", 0) : 0;
+    }
 }

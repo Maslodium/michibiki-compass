@@ -35,6 +35,8 @@ public final class SettingsActivity extends Activity {
         addSwitch(content, "Bias search to the current city\nThe system geocoder may process a reverse-geocoding request", "city_bias", true);
         addSwitch(content, "Online OpenStreetMap tiles", "online_maps", true);
         addSwitch(content, "Live widget location updates\nUses a foreground service with a persistent notification", "live_widget", true);
+        addSwitch(content, "Automatic obstacle and detour detection\nSends start and destination coordinates to the Valhalla OpenStreetMap demo router", "automatic_obstacles", true);
+        addSwitch(content, "Show all cardinal directions\nRed north plus white E, S and W in the app and widget", "cardinal_mode", false);
         addGlyphBrightness(content);
 
         TextView note = Ui.text(this, "", 13, false);
@@ -75,6 +77,14 @@ public final class SettingsActivity extends Activity {
             if ("live_widget".equals(key)) {
                 if (checked) NavWidgetProvider.startLiveUpdates(this);
                 else stopService(new android.content.Intent(this, LiveNavigationService.class));
+            } else if ("cardinal_mode".equals(key)) {
+                NavWidgetProvider.updateAll(this);
+            } else if ("automatic_obstacles".equals(key)) {
+                if (checked) ObstacleRouteDetector.forceRefresh(this);
+                else {
+                    NavStore.setObstacleResult(this, false, 0);
+                    NavWidgetProvider.updateAll(this);
+                }
             }
         });
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);

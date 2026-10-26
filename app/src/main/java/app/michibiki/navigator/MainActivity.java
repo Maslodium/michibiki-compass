@@ -65,7 +65,7 @@ public final class MainActivity extends Activity implements SensorEventListener,
         gap(root, 10);
 
         compass = new CompassView(this);
-        compass.setContentDescription("Compass. Tap to show all cardinal directions; hold for detour mode");
+        compass.setContentDescription("Compass. Tap anywhere to show all cardinal directions; hold when an obstacle is present");
         compass.setOnClickListener(view -> {
             cardinalMode = !cardinalMode;
             NavStore.setOption(this, "cardinal_mode", cardinalMode);
@@ -74,11 +74,8 @@ public final class MainActivity extends Activity implements SensorEventListener,
             Toast.makeText(this, cardinalMode ? "Full compass enabled" : "Full compass disabled", Toast.LENGTH_SHORT).show();
         });
         compass.setOnLongClickListener(view -> {
-            detourMode = !detourMode;
-            NavStore.setOption(this, "detour_mode", detourMode);
-            compass.setDetourMode(detourMode);
-            NavWidgetProvider.updateAll(this);
-            Toast.makeText(this, detourMode ? "Detour preview enabled" : "Detour preview disabled", Toast.LENGTH_SHORT).show();
+            ObstacleRouteDetector.forceRefresh(this);
+            Toast.makeText(this, "Checking the walking route", Toast.LENGTH_SHORT).show();
             return true;
         });
         root.addView(compass, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(292)));
@@ -192,10 +189,11 @@ public final class MainActivity extends Activity implements SensorEventListener,
 
     @Override protected void onResume() {
         super.onResume();
-        detourMode = NavStore.option(this, "detour_mode", false);
-        compass.setDetourMode(detourMode);
+        detourMode = NavStore.obstacleDetected(this);
+        compass.setDetourMode(detourMode, NavStore.obstacleDirection(this));
         cardinalMode = NavStore.option(this, "cardinal_mode", false);
         compass.setCardinalMode(cardinalMode);
+        ObstacleRouteDetector.setListener(this::refresh);
         if (rotationSensor != null) sensorManager.registerListener(this, rotationSensor, SensorManager.SENSOR_DELAY_FASTEST);
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                 || checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -208,6 +206,7 @@ public final class MainActivity extends Activity implements SensorEventListener,
 
     @Override protected void onPause() {
         super.onPause();
+        ObstacleRouteDetector.setListener(null);
         sensorManager.unregisterListener(this);
         locationProvider.stop();
     }
@@ -233,12 +232,15 @@ public final class MainActivity extends Activity implements SensorEventListener,
     @Override public void onLocation(Location location) {
         targetDirection.onLocation(location);
         NavStore.setLocation(this, location);
+        ObstacleRouteDetector.maybeRefresh(this);
         refresh();
     }
 
     @Override public void onProviderError(String message) { statusText.setText(message); }
 
     private void refresh() {
+        detourMode = NavStore.obstacleDetected(this);
+        compass.setDetourMode(detourMode, NavStore.obstacleDirection(this));
         if (!NavStore.hasTarget(this)) {
             compass.setNavigation(0, compassHeading, false);
             targetText.setText("No destination selected");

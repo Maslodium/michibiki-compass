@@ -65,7 +65,8 @@ public final class NavWidgetProvider extends AppWidgetProvider {
 
     private static RemoteViews build(Context context) {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_nav);
-        boolean detourMode = NavStore.option(context, "detour_mode", false);
+        boolean detourMode = NavStore.obstacleDetected(context);
+        int detourDirection = NavStore.obstacleDirection(context);
         boolean cardinalMode = NavStore.option(context, "cardinal_mode", false);
         boolean hasHeading = NavStore.hasHeading(context);
         float heading = hasHeading ? NavStore.heading(context) : 0f;
@@ -86,14 +87,14 @@ public final class NavWidgetProvider extends AppWidgetProvider {
             views.setTextViewText(R.id.widget_name, "No destination");
             views.setTextViewText(R.id.widget_distance, "—");
             views.setTextViewText(R.id.widget_status, "Tap to configure");
-            views.setImageViewBitmap(R.id.widget_arrow, compassBitmap(0, northDirection, false, detourMode, cardinalMode));
+            views.setImageViewBitmap(R.id.widget_arrow, compassBitmap(0, northDirection, false, detourMode, detourDirection, cardinalMode));
             return views;
         }
         views.setTextViewText(R.id.widget_name, NavStore.targetName(context));
         if (!NavStore.hasLocation(context)) {
             views.setTextViewText(R.id.widget_distance, "—");
             views.setTextViewText(R.id.widget_status, "Waiting for location");
-            views.setImageViewBitmap(R.id.widget_arrow, compassBitmap(0, northDirection, false, detourMode, cardinalMode));
+            views.setImageViewBitmap(R.id.widget_arrow, compassBitmap(0, northDirection, false, detourMode, detourDirection, cardinalMode));
             return views;
         }
         double bearing = GeoMath.bearingDegrees(NavStore.locationLat(context), NavStore.locationLon(context), NavStore.targetLat(context), NavStore.targetLon(context));
@@ -105,12 +106,13 @@ public final class NavWidgetProvider extends AppWidgetProvider {
                 ? (float) GeoMath.normalize(bearing - heading)
                 : (float) bearing;
         views.setImageViewBitmap(R.id.widget_arrow,
-                compassBitmap(relativeBearing, northDirection, true, detourMode, cardinalMode));
+                compassBitmap(relativeBearing, northDirection, true, detourMode, detourDirection, cardinalMode));
         return views;
     }
 
     private static Bitmap compassBitmap(float degrees, float northDegrees,
-                                        boolean ready, boolean detourMode, boolean cardinalMode) {
+                                        boolean ready, boolean detourMode, int detourDirection,
+                                        boolean cardinalMode) {
         Bitmap bitmap = Bitmap.createBitmap(180, 180, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -169,7 +171,7 @@ public final class NavWidgetProvider extends AppWidgetProvider {
             left.lineTo(35, 90);
             left.lineTo(55, 105);
             left.lineTo(50, 93);
-            canvas.drawPath(left, paint);
+            if (detourDirection <= 0) canvas.drawPath(left, paint);
 
             Path right = new Path();
             right.moveTo(130, 87);
@@ -177,7 +179,7 @@ public final class NavWidgetProvider extends AppWidgetProvider {
             right.lineTo(145, 90);
             right.lineTo(125, 105);
             right.lineTo(130, 93);
-            canvas.drawPath(right, paint);
+            if (detourDirection >= 0) canvas.drawPath(right, paint);
         }
         return bitmap;
     }

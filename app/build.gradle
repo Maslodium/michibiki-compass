@@ -10,8 +10,8 @@ android {
         applicationId 'app.michibiki.navigator'
         minSdk 33
         targetSdk 35
-        versionCode 13
-        versionName '0.2.8-cardinal-compass'
+        versionCode 14
+        versionName '0.2.9-compass-settings'
     }
 
     buildTypes {

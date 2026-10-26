@@ -16,12 +16,13 @@ Michibiki is a privacy-first waypoint compass for Nothing phones. Choose a desti
 - point selection on the built-in map;
 - separate controls for GPS and network location;
 - independent north marker and destination direction;
-- optional full cardinal compass in the app and widget: tap `N` to show a red north marker plus white `E`, `S`, and `W` labels;
+- optional persistent full cardinal compass in the app and widget: tap anywhere on the compass or use Settings to show a red north marker plus white `E`, `S`, and `W` labels;
 - GNSS course while moving, filtered compass while stationary;
 - rejection of sudden sensor spikes;
 - orientation-aware live home-screen and lock-screen 4×2 widget with manual refresh and an optional foreground location service;
 - one visual language across the app, widget, and Glyph Matrix: an A-shaped destination arrow, an arc with `N` for north, and side half-arrows for detours;
-- synchronized long-press obstacle/detour mode; Glyph elements use shape—not brightness—to convey meaning;
+- automatic pedestrian-route obstacle detection over a 160° forward sector; only the required left or right detour arrow is shown;
+- long press requests an immediate route rescan; Glyph elements use shape—not brightness—to convey meaning;
 - global Glyph Matrix brightness control from 10% to 100%, applied uniformly to every element;
 - native rendering for both supported Glyph Matrix sizes.
 
@@ -33,11 +34,11 @@ Michibiki is a privacy-first waypoint compass for Nothing phones. Choose a desti
 | Nothing Phone (4a) Pro | 13×13 | AOD-compatible display with simplified artwork |
 | Phone (1), Phone (2), Phone (2a), Phone (3a) series | LED strips | Not yet supported; these require the classic Glyph SDK |
 
-Obstacle mode draws the boundary near the outer edge and rotates it independently from the destination arrow. Until map/routing geometry is implemented, the wall is estimated as perpendicular to the direct bearing to the destination.
+The detector compares the direct bearing with the first meaningful segment of a Valhalla/OpenStreetMap pedestrian route. When the route is meaningfully longer and initially turns away, Michibiki shows only the required detour direction. A successful recalculation clears the arrow after the obstacle has been passed.
 
 ### Privacy
 
-Navigation state is stored locally. Michibiki contains no analytics, advertising, or tracking backend. Android's geocoder, speech recognizer, map tiles, and network-location provider may contact their respective service providers when enabled.
+Navigation state is stored locally. Michibiki contains no analytics, advertising, or tracking backend. Android's geocoder, speech recognizer, map tiles, Valhalla, and the network-location provider may receive the requests needed for enabled features. Automatic obstacle detection can be disabled in Settings.
 
 ## Русский
 
@@ -49,12 +50,13 @@ Michibiki — приватный компас-навигация для теле
 - выбор точки на встроенной карте;
 - отдельные переключатели GPS и сетевого местоположения;
 - независимые указатели севера и направления к цели;
-- включаемый полный компас в приложении и виджете: нажмите `N`, чтобы показать красный север и белые метки `E`, `S`, `W`;
+- сохраняемый полный компас в приложении и виджете: нажмите в любом месте компаса или используйте настройки, чтобы показать красный север и белые метки `E`, `S`, `W`;
 - курс GNSS при движении и отфильтрованный компас на месте;
 - отсечение резких скачков датчика;
 - живой виджет 4×2 для рабочего стола и экрана блокировки, учитывающий поворот телефона: ручное обновление и отключаемый foreground-сервис;
 - единый визуальный язык в приложении, виджете и Glyph Matrix: A-образная стрелка цели, дуга с `N` для севера и боковые полустрелки обхода;
-- синхронизированный режим препятствия/обхода по долгому нажатию; на Glyph элементы различаются формой, а не яркостью;
+- автоматическая проверка препятствий по пешеходному маршруту в секторе 160° впереди; показывается только нужная левая или правая стрелка обхода;
+- долгое нажатие запускает немедленную повторную проверку; на Glyph элементы различаются формой, а не яркостью;
 - общая регулировка яркости Glyph Matrix от 10% до 100%, одинаковая для всех элементов;
 - нативный рендер для обеих поддерживаемых Glyph Matrix.
 
@@ -66,11 +68,11 @@ Michibiki — приватный компас-навигация для теле
 | Nothing Phone (4a) Pro | 13×13 | Режим AOD с упрощённой и читаемой графикой |
 | Phone (1), Phone (2), Phone (2a), Phone (3a) | Светодиодные полосы | Пока не поддерживаются: для них нужен отдельный классический Glyph SDK |
 
-В режиме препятствия граница рисуется у внешнего края и поворачивается независимо от стрелки к цели. Пока геометрия препятствий из карт или роутинга не подключена, стена считается перпендикулярной прямому направлению к точке.
+Проверка сравнивает прямое направление с первым существенным участком пешеходного маршрута Valhalla/OpenStreetMap. Если маршрут заметно длиннее прямой и уходит в сторону, приложение показывает нужное направление обхода. После прохождения препятствия следующий успешный пересчёт автоматически убирает стрелку.
 
 ### Приватность
 
-Состояние навигации хранится локально. В Michibiki нет аналитики, рекламы и собственного трекингового сервера. При включении соответствующих функций системный геокодер Android, распознавание речи, сервер карт и провайдер сетевого местоположения могут обращаться к своим поставщикам.
+Состояние навигации хранится локально. В Michibiki нет аналитики, рекламы и собственного трекингового сервера. При включении соответствующих функций системный геокодер Android, распознавание речи, сервер карт, Valhalla и провайдер сетевого местоположения могут получать необходимые запросы. Автоматическую проверку препятствий можно отключить в настройках.
 
 ## Screenshots / Скриншоты
 

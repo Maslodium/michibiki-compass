@@ -29,7 +29,6 @@ public final class NavigationGlyphToyService extends Service implements SensorEv
     private SystemLocationProvider locationProvider;
     private final TargetDirectionEngine targetDirection = new TargetDirectionEngine();
     private final AngleFilter northCompass = new AngleFilter(0.30, 25.0, 220.0);
-    private boolean obstaclePreview;
     private boolean connected;
     private int matrixSize = 25;
     private int center = 12;
@@ -48,9 +47,7 @@ public final class NavigationGlyphToyService extends Service implements SensorEv
                 Bundle data = message.getData();
                 String event = data.getString(GlyphToy.MSG_GLYPH_TOY_DATA);
                 if (GlyphToy.EVENT_CHANGE.equals(event)) {
-                    obstaclePreview = !obstaclePreview;
-                    NavStore.setOption(NavigationGlyphToyService.this, "detour_mode", obstaclePreview);
-                    NavWidgetProvider.updateAll(NavigationGlyphToyService.this);
+                    ObstacleRouteDetector.forceRefresh(NavigationGlyphToyService.this);
                     renderFrame();
                 } else if (GlyphToy.EVENT_AOD.equals(event)) {
                     renderFrame();
@@ -62,7 +59,6 @@ public final class NavigationGlyphToyService extends Service implements SensorEv
 
     @Override public void onCreate() {
         super.onCreate();
-        obstaclePreview = NavStore.option(this, "detour_mode", false);
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         rotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         locationProvider = new SystemLocationProvider(this);
@@ -138,6 +134,7 @@ public final class NavigationGlyphToyService extends Service implements SensorEv
     @Override public void onLocation(Location location) {
         targetDirection.onLocation(location);
         NavStore.setLocation(this, location);
+        ObstacleRouteDetector.maybeRefresh(this);
     }
     @Override public void onProviderError(String message) {}
 
@@ -157,7 +154,9 @@ public final class NavigationGlyphToyService extends Service implements SensorEv
             // target and wall angles separate so real map geometry can replace it.
             drawTargetArrow(frame, relative);
             drawPositionRings(frame);
-            if (obstaclePreview) drawObstacle(frame, relative, relative);
+            if (NavStore.obstacleDetected(this)) {
+                drawObstacle(frame, relative, relative, NavStore.obstacleDirection(this));
+            }
             if (northCompass.hasValue()) drawNorthMarker(frame, -northCompass.value());
         }
         try { matrixManager.setMatrixFrame(frame); } catch (Exception ignored) {}
@@ -186,7 +185,8 @@ public final class NavigationGlyphToyService extends Service implements SensorEv
         return (int) Math.copySign(Math.floor(Math.abs(value) + 0.5), value);
     }
 
-    private void drawObstacle(int[] frame, double targetDegrees, double wallNormalDegrees) {
+    private void drawObstacle(int[] frame, double targetDegrees, double wallNormalDegrees,
+                              int direction) {
         double targetRadians = Math.toRadians(targetDegrees);
         double wallRadians = Math.toRadians(wallNormalDegrees);
 
@@ -196,15 +196,19 @@ public final class NavigationGlyphToyService extends Service implements SensorEv
         drawRotatedLine(frame, -5, -7, 5, -7, wallRadians, frameBrightness);
 
         // Two half-arrows use the same inward serif language as the target.
-        drawRotatedLine(frame, -6, -3, -10, 0, targetRadians, frameBrightness);
-        drawRotatedLine(frame, -10, 0, -6, 3, targetRadians, frameBrightness);
-        drawRotatedLine(frame, -6, -3, -7, -1, targetRadians, frameBrightness);
-        drawRotatedLine(frame, -6, 3, -7, 1, targetRadians, frameBrightness);
+        if (direction <= 0) {
+            drawRotatedLine(frame, -6, -3, -10, 0, targetRadians, frameBrightness);
+            drawRotatedLine(frame, -10, 0, -6, 3, targetRadians, frameBrightness);
+            drawRotatedLine(frame, -6, -3, -7, -1, targetRadians, frameBrightness);
+            drawRotatedLine(frame, -6, 3, -7, 1, targetRadians, frameBrightness);
+        }
 
-        drawRotatedLine(frame, 6, -3, 10, 0, targetRadians, frameBrightness);
-        drawRotatedLine(frame, 10, 0, 6, 3, targetRadians, frameBrightness);
-        drawRotatedLine(frame, 6, -3, 7, -1, targetRadians, frameBrightness);
-        drawRotatedLine(frame, 6, 3, 7, 1, targetRadians, frameBrightness);
+        if (direction >= 0) {
+            drawRotatedLine(frame, 6, -3, 10, 0, targetRadians, frameBrightness);
+            drawRotatedLine(frame, 10, 0, 6, 3, targetRadians, frameBrightness);
+            drawRotatedLine(frame, 6, -3, 7, -1, targetRadians, frameBrightness);
+            drawRotatedLine(frame, 6, 3, 7, 1, targetRadians, frameBrightness);
+        }
     }
 
     private void drawRotatedLine(int[] frame, int x0, int y0, int x1, int y1,
