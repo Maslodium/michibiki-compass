@@ -1,0 +1,32 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'app.michibiki.navigator'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'app.michibiki.navigator'
+        minSdk 33
+        targetSdk 35
+        versionCode 5
+        versionName '0.2.0-matrix-compat'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation files('libs/glyph-matrix-sdk-2.0.aar')
+}

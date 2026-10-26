@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Michibiki</string>
+    <string name="glyph_toy_name">Michibiki</string>
+    <string name="glyph_toy_summary">Live direction arrow to the selected waypoint</string>
+</resources>
