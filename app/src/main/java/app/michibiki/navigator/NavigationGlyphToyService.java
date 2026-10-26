@@ -227,16 +227,9 @@ public final class NavigationGlyphToyService extends Service implements SensorEv
     }
 
     private void drawPositionRings(int[] frame) {
-        drawPixelCircle(frame, 2, 255);
-        drawPixelCircle(frame, 3, 255);
-    }
-
-    private void drawPixelCircle(int[] frame, int logicalRadius, int brightness) {
-        for (int angle = 0; angle < 360; angle += 15) {
-            double radians = Math.toRadians(angle);
-            int[] point = rotatePoint(logicalRadius, 0, radians);
-            setPixel(frame, center + point[0], center + point[1], brightness);
-        }
+        // A single reference pixel stays legible without competing with arrows
+        // on either the 25x25 or compact 13x13 matrix.
+        setPixel(frame, center, center, 255);
     }
 
     private void drawThickLine(int[] frame, int x0, int y0, int x1, int y1, int brightness) {
