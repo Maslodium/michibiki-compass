@@ -161,11 +161,11 @@ public final class NavigationGlyphToyService extends Service implements SensorEv
 
     private void drawTargetArrow(int[] frame, double degrees) {
         double radians = Math.toRadians(degrees);
-        drawRotatedLine(frame, -4, -3, 0, -9, radians, 255);
-        drawRotatedLine(frame, 0, -9, 4, -3, radians, 255);
+        drawRotatedLine(frame, -3, -3, 0, -10, radians, 255);
+        drawRotatedLine(frame, 0, -10, 3, -3, radians, 255);
         // Short serifs point inward and make the destination a complete A-like mark.
-        drawRotatedLine(frame, -4, -3, -2, -3, radians, 255);
-        drawRotatedLine(frame, 4, -3, 2, -3, radians, 255);
+        drawRotatedLine(frame, -3, -3, -1, -3, radians, 255);
+        drawRotatedLine(frame, 3, -3, 1, -3, radians, 255);
     }
 
     private int[] rotatePoint(int x, int y, double radians) {
@@ -192,15 +192,15 @@ public final class NavigationGlyphToyService extends Service implements SensorEv
         drawRotatedLine(frame, -5, -7, 5, -7, wallRadians, 255);
 
         // Two half-arrows use the same inward serif language as the target.
-        drawRotatedLine(frame, -6, -3, -9, 0, targetRadians, 255);
-        drawRotatedLine(frame, -9, 0, -6, 3, targetRadians, 255);
-        drawRotatedLine(frame, -6, -3, -4, -3, targetRadians, 255);
-        drawRotatedLine(frame, -6, 3, -4, 3, targetRadians, 255);
+        drawRotatedLine(frame, -6, -3, -10, 0, targetRadians, 255);
+        drawRotatedLine(frame, -10, 0, -6, 3, targetRadians, 255);
+        drawRotatedLine(frame, -6, -3, -7, -1, targetRadians, 255);
+        drawRotatedLine(frame, -6, 3, -7, 1, targetRadians, 255);
 
-        drawRotatedLine(frame, 6, -3, 9, 0, targetRadians, 255);
-        drawRotatedLine(frame, 9, 0, 6, 3, targetRadians, 255);
-        drawRotatedLine(frame, 6, -3, 4, -3, targetRadians, 255);
-        drawRotatedLine(frame, 6, 3, 4, 3, targetRadians, 255);
+        drawRotatedLine(frame, 6, -3, 10, 0, targetRadians, 255);
+        drawRotatedLine(frame, 10, 0, 6, 3, targetRadians, 255);
+        drawRotatedLine(frame, 6, -3, 7, -1, targetRadians, 255);
+        drawRotatedLine(frame, 6, 3, 7, 1, targetRadians, 255);
     }
 
     private void drawRotatedLine(int[] frame, int x0, int y0, int x1, int y1,

@@ -10,8 +10,8 @@ android {
         applicationId 'app.michibiki.navigator'
         minSdk 33
         targetSdk 35
-        versionCode 7
-        versionName '0.2.2-compass-language'
+        versionCode 8
+        versionName '0.2.3-sharp-arrows'
     }
 
     buildTypes {

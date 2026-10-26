@@ -40,8 +40,9 @@ public final class CompassView extends View {
         float radius = Math.min(cx, cy) - dp(15);
 
         paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeCap(Paint.Cap.ROUND);
-        paint.setStrokeJoin(Paint.Join.ROUND);
+        paint.setStrokeCap(Paint.Cap.BUTT);
+        paint.setStrokeJoin(Paint.Join.MITER);
+        paint.setStrokeMiter(8f);
         paint.setStrokeWidth(dp(2));
         paint.setColor(Color.WHITE);
         canvas.drawCircle(cx, cy, radius, paint);
@@ -86,9 +87,9 @@ public final class CompassView extends View {
     }
 
     private void drawTargetArrow(Canvas canvas, float cx, float cy, float radius) {
-        float tipY = cy - radius * 0.60f;
+        float tipY = cy - radius * 0.63f;
         float footY = cy - radius * 0.27f;
-        float halfWidth = radius * 0.16f;
+        float halfWidth = radius * 0.13f;
         float serif = radius * 0.055f;
         Path target = new Path();
         target.moveTo(cx - halfWidth, footY);
@@ -106,8 +107,9 @@ public final class CompassView extends View {
 
     private void drawDetourArrows(Canvas canvas, float cx, float cy, float radius) {
         float offset = radius * 0.48f;
-        float halfHeight = radius * 0.11f;
-        float depth = radius * 0.10f;
+        // Compact copies of the main A-shaped arrow, rotated toward each bypass.
+        float halfHeight = radius * 0.09f;
+        float depth = radius * 0.13f;
         float serif = radius * 0.045f;
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(dp(5));
@@ -118,9 +120,9 @@ public final class CompassView extends View {
         left.lineTo(cx - offset, cy);
         left.lineTo(cx - offset + depth, cy + halfHeight);
         left.moveTo(cx - offset + depth, cy - halfHeight);
-        left.lineTo(cx - offset + depth + serif, cy - halfHeight);
+        left.lineTo(cx - offset + depth - serif * 0.35f, cy - halfHeight + serif);
         left.moveTo(cx - offset + depth, cy + halfHeight);
-        left.lineTo(cx - offset + depth + serif, cy + halfHeight);
+        left.lineTo(cx - offset + depth - serif * 0.35f, cy + halfHeight - serif);
         canvas.drawPath(left, paint);
 
         Path right = new Path();
@@ -128,9 +130,9 @@ public final class CompassView extends View {
         right.lineTo(cx + offset, cy);
         right.lineTo(cx + offset - depth, cy + halfHeight);
         right.moveTo(cx + offset - depth, cy - halfHeight);
-        right.lineTo(cx + offset - depth - serif, cy - halfHeight);
+        right.lineTo(cx + offset - depth + serif * 0.35f, cy - halfHeight + serif);
         right.moveTo(cx + offset - depth, cy + halfHeight);
-        right.lineTo(cx + offset - depth - serif, cy + halfHeight);
+        right.lineTo(cx + offset - depth + serif * 0.35f, cy + halfHeight - serif);
         canvas.drawPath(right, paint);
     }
 
