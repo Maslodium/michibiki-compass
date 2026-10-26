@@ -66,6 +66,7 @@ public final class NavWidgetProvider extends AppWidgetProvider {
     private static RemoteViews build(Context context) {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_nav);
         boolean detourMode = NavStore.option(context, "detour_mode", false);
+        boolean cardinalMode = NavStore.option(context, "cardinal_mode", false);
         boolean hasHeading = NavStore.hasHeading(context);
         float heading = hasHeading ? NavStore.heading(context) : 0f;
         float northDirection = hasHeading ? -heading : 0f;
@@ -85,14 +86,14 @@ public final class NavWidgetProvider extends AppWidgetProvider {
             views.setTextViewText(R.id.widget_name, "No destination");
             views.setTextViewText(R.id.widget_distance, "—");
             views.setTextViewText(R.id.widget_status, "Tap to configure");
-            views.setImageViewBitmap(R.id.widget_arrow, compassBitmap(0, northDirection, false, detourMode));
+            views.setImageViewBitmap(R.id.widget_arrow, compassBitmap(0, northDirection, false, detourMode, cardinalMode));
             return views;
         }
         views.setTextViewText(R.id.widget_name, NavStore.targetName(context));
         if (!NavStore.hasLocation(context)) {
             views.setTextViewText(R.id.widget_distance, "—");
             views.setTextViewText(R.id.widget_status, "Waiting for location");
-            views.setImageViewBitmap(R.id.widget_arrow, compassBitmap(0, northDirection, false, detourMode));
+            views.setImageViewBitmap(R.id.widget_arrow, compassBitmap(0, northDirection, false, detourMode, cardinalMode));
             return views;
         }
         double bearing = GeoMath.bearingDegrees(NavStore.locationLat(context), NavStore.locationLon(context), NavStore.targetLat(context), NavStore.targetLon(context));
@@ -104,12 +105,12 @@ public final class NavWidgetProvider extends AppWidgetProvider {
                 ? (float) GeoMath.normalize(bearing - heading)
                 : (float) bearing;
         views.setImageViewBitmap(R.id.widget_arrow,
-                compassBitmap(relativeBearing, northDirection, true, detourMode));
+                compassBitmap(relativeBearing, northDirection, true, detourMode, cardinalMode));
         return views;
     }
 
     private static Bitmap compassBitmap(float degrees, float northDegrees,
-                                        boolean ready, boolean detourMode) {
+                                        boolean ready, boolean detourMode, boolean cardinalMode) {
         Bitmap bitmap = Bitmap.createBitmap(180, 180, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -127,11 +128,19 @@ public final class NavWidgetProvider extends AppWidgetProvider {
         paint.setStrokeWidth(4f);
         canvas.drawArc(northArc, -116f, 52f, false, paint);
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.WHITE);
+        paint.setColor(cardinalMode ? Color.rgb(255, 35, 48) : Color.WHITE);
         paint.setTextSize(20f);
         paint.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
         paint.setTextAlign(Paint.Align.CENTER);
         canvas.drawText("N", 90, 37, paint);
+        if (cardinalMode) {
+            Paint.FontMetrics metrics = paint.getFontMetrics();
+            float centerOffset = -(metrics.ascent + metrics.descent) / 2f;
+            paint.setColor(Color.WHITE);
+            canvas.drawText("E", 143, 90 + centerOffset, paint);
+            canvas.drawText("S", 90, 143 + centerOffset, paint);
+            canvas.drawText("W", 37, 90 + centerOffset, paint);
+        }
         canvas.restore();
 
         paint.setStyle(Paint.Style.STROKE);

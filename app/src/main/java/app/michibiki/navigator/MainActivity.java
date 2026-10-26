@@ -40,6 +40,7 @@ public final class MainActivity extends Activity implements SensorEventListener,
     private final TargetDirectionEngine targetDirection = new TargetDirectionEngine();
     private float compassHeading;
     private boolean detourMode;
+    private boolean cardinalMode;
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -64,6 +65,14 @@ public final class MainActivity extends Activity implements SensorEventListener,
         gap(root, 10);
 
         compass = new CompassView(this);
+        compass.setContentDescription("Compass. Tap to show all cardinal directions; hold for detour mode");
+        compass.setOnClickListener(view -> {
+            cardinalMode = !cardinalMode;
+            NavStore.setOption(this, "cardinal_mode", cardinalMode);
+            compass.setCardinalMode(cardinalMode);
+            NavWidgetProvider.updateAll(this);
+            Toast.makeText(this, cardinalMode ? "Full compass enabled" : "Full compass disabled", Toast.LENGTH_SHORT).show();
+        });
         compass.setOnLongClickListener(view -> {
             detourMode = !detourMode;
             NavStore.setOption(this, "detour_mode", detourMode);
@@ -185,6 +194,8 @@ public final class MainActivity extends Activity implements SensorEventListener,
         super.onResume();
         detourMode = NavStore.option(this, "detour_mode", false);
         compass.setDetourMode(detourMode);
+        cardinalMode = NavStore.option(this, "cardinal_mode", false);
+        compass.setCardinalMode(cardinalMode);
         if (rotationSensor != null) sensorManager.registerListener(this, rotationSensor, SensorManager.SENSOR_DELAY_FASTEST);
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                 || checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {

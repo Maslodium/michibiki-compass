@@ -8,6 +8,7 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 
 public final class CompassView extends View {
@@ -17,6 +18,8 @@ public final class CompassView extends View {
     private float heading;
     private boolean ready;
     private boolean detourMode;
+    private boolean cardinalMode;
+    private boolean northTapCandidate;
 
     public CompassView(Context context) { super(context); }
     public CompassView(Context context, AttributeSet attrs) { super(context, attrs); }
@@ -31,6 +34,43 @@ public final class CompassView extends View {
     public void setDetourMode(boolean enabled) {
         detourMode = enabled;
         invalidate();
+    }
+
+    public void setCardinalMode(boolean enabled) {
+        cardinalMode = enabled;
+        invalidate();
+    }
+
+    @Override public boolean onTouchEvent(MotionEvent event) {
+        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+            northTapCandidate = isNearNorthLabel(event.getX(), event.getY());
+        } else if (event.getActionMasked() == MotionEvent.ACTION_MOVE
+                && northTapCandidate && !isNearNorthLabel(event.getX(), event.getY())) {
+            northTapCandidate = false;
+        } else if (event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+            northTapCandidate = false;
+        }
+        return super.onTouchEvent(event);
+    }
+
+    @Override public boolean performClick() {
+        if (!northTapCandidate) return false;
+        northTapCandidate = false;
+        return super.performClick();
+    }
+
+    private boolean isNearNorthLabel(float x, float y) {
+        float cx = getWidth() / 2f;
+        float cy = getHeight() / 2f;
+        float radius = Math.min(cx, cy) - dp(15);
+        float markerRadius = radius - dp(36);
+        double radians = Math.toRadians(-heading);
+        float markerX = cx + (float) Math.sin(radians) * markerRadius;
+        float markerY = cy - (float) Math.cos(radians) * markerRadius;
+        float dx = x - markerX;
+        float dy = y - markerY;
+        float hitRadius = dp(30);
+        return dx * dx + dy * dy <= hitRadius * hitRadius;
     }
 
     @Override protected void onDraw(Canvas canvas) {
@@ -78,12 +118,29 @@ public final class CompassView extends View {
         paint.setColor(Color.WHITE);
         canvas.drawArc(arcBounds, -116f, 52f, false, paint);
 
+        prepareCardinalText();
+        paint.setColor(cardinalMode ? TARGET_RED : Color.WHITE);
+        canvas.drawText("N", cx, cy - radius + dp(36), paint);
+        if (cardinalMode) {
+            float letterRadius = radius - dp(36);
+            paint.setColor(Color.WHITE);
+            canvas.drawText("E", cx + letterRadius, cy + centeredTextOffset(), paint);
+            canvas.drawText("S", cx, cy + letterRadius + centeredTextOffset(), paint);
+            canvas.drawText("W", cx - letterRadius, cy + centeredTextOffset(), paint);
+        }
+        canvas.restore();
+    }
+
+    private void prepareCardinalText() {
         paint.setStyle(Paint.Style.FILL);
         paint.setTextAlign(Paint.Align.CENTER);
         paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
         paint.setTextSize(dp(18));
-        canvas.drawText("N", cx, cy - radius + dp(36), paint);
-        canvas.restore();
+    }
+
+    private float centeredTextOffset() {
+        Paint.FontMetrics metrics = paint.getFontMetrics();
+        return -(metrics.ascent + metrics.descent) / 2f;
     }
 
     private void drawTargetArrow(Canvas canvas, float cx, float cy, float radius) {

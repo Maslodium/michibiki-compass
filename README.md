@@ -16,6 +16,7 @@ Michibiki is a privacy-first waypoint compass for Nothing phones. Choose a desti
 - point selection on the built-in map;
 - separate controls for GPS and network location;
 - independent north marker and destination direction;
+- optional full cardinal compass in the app and widget: tap `N` to show a red north marker plus white `E`, `S`, and `W` labels;
 - GNSS course while moving, filtered compass while stationary;
 - rejection of sudden sensor spikes;
 - orientation-aware live home-screen and lock-screen 4×2 widget with manual refresh and an optional foreground location service;
@@ -48,6 +49,7 @@ Michibiki — приватный компас-навигация для теле
 - выбор точки на встроенной карте;
 - отдельные переключатели GPS и сетевого местоположения;
 - независимые указатели севера и направления к цели;
+- включаемый полный компас в приложении и виджете: нажмите `N`, чтобы показать красный север и белые метки `E`, `S`, `W`;
 - курс GNSS при движении и отфильтрованный компас на месте;
 - отсечение резких скачков датчика;
 - живой виджет 4×2 для рабочего стола и экрана блокировки, учитывающий поворот телефона: ручное обновление и отключаемый foreground-сервис;
