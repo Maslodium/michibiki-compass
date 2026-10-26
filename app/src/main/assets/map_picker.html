@@ -10,7 +10,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const map=L.map('map').setView([55.751244,37.618423],13);
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
 let marker=null;
 function setCenter(lat,lon){map.setView([lat,lon],15);if(marker)map.removeLayer(marker);marker=L.marker([lat,lon]).addTo(map);}
 map.on('click',e=>{if(marker)map.removeLayer(marker);marker=L.marker(e.latlng).addTo(map);Android.onPointSelected(e.latlng.lat,e.latlng.lng);});
